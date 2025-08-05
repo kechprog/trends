@@ -1,3 +1,5 @@
 .env
 .venv
 data/downloaded/
+__pycache__/
+data/training

@@ -89,6 +89,22 @@ def fetch_daily_data(symbol, outputsize='full', retry_count=3):
                 print(f"No data before {CUTOFF_DATE} for {symbol}")
                 return None
             
+            # Find the last zero volume entry
+            last_zero_idx = None
+            for idx in range(len(df) - 1, -1, -1):
+                if df.iloc[idx]['volume'] == 0:
+                    last_zero_idx = idx
+                    break
+            
+            if last_zero_idx is not None:
+                # Remove everything up to and including the last zero volume entry
+                if last_zero_idx == len(df) - 1:
+                    print(f"All data ends with zero volume for {symbol}")
+                    return None
+                else:
+                    print(f"Removing {last_zero_idx + 1} entries (up to last zero volume) for {symbol}")
+                    df = df.iloc[last_zero_idx + 1:]
+            
             print(f"Fetched {len(df)} rows for {symbol} (up to {df.index.max().date()})")
             
             return df

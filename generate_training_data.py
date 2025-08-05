@@ -140,6 +140,9 @@ def generate_training_samples(df, segments, lookback_window):
     # Map regime names to class indices
     regime_map = {'bull': 0, 'flat': 1, 'bear': 2}
     
+    skipped_nan = 0
+    skipped_no_segment = 0
+    
     # We can generate samples from index 0 to len(df) - lookback_window - 1
     # Because we need lookback_window points for features and at least 1 point to predict
     for i in range(len(df) - lookback_window - 1):
@@ -152,6 +155,7 @@ def generate_training_samples(df, segments, lookback_window):
         # Find which segment contains the prediction point
         target_segment = find_segment_at_index(segments, predict_idx)
         if target_segment is None:
+            skipped_no_segment += 1
             continue
         
         # Normalize features using only lookback window data
@@ -160,6 +164,8 @@ def generate_training_samples(df, segments, lookback_window):
         for col in ['open', 'high', 'low', 'close']:
             returns = lookback_data[col].pct_change()
             log_rets = np.log(1 + returns)
+            # Drop the first NaN value from pct_change
+            log_rets = log_rets.iloc[1:]
             # Use lookback window for normalization
             mean = log_rets.mean()
             std = log_rets.std()
@@ -171,6 +177,8 @@ def generate_training_samples(df, segments, lookback_window):
         
         # Volume feature: z-score normalized log volume
         log_volume = np.log(lookback_data['volume'])
+        # Drop the first value to match the length of price returns
+        log_volume = log_volume.iloc[1:]
         volume_mean = log_volume.mean()
         volume_std = log_volume.std()
         if volume_std > 0:
@@ -184,6 +192,7 @@ def generate_training_samples(df, segments, lookback_window):
         
         # Skip if we have NaN values (from first return calculation)
         if np.any(np.isnan(X_sample)):
+            skipped_nan += 1
             continue
         
         # Calculate duration metric
