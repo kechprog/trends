@@ -4,3 +4,5 @@ pandas
 numpy
 matplotlib
 scipy
+torch>=2.0.0
+scikit-learn
