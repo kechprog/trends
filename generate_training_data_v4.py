@@ -277,10 +277,12 @@ def generate_training_samples(df, segments, lookback_window, pre_lookback=20):
         # Get volumes from predict_idx to end of segment
         duration_volumes = df['volume'].iloc[segment_start_idx:segment_end_idx+1].values
         
-        # Calculate z-score using lookback statistics
-        log_duration_volumes = np.log(duration_volumes)
-        duration_zscores = (log_duration_volumes - volume_mean) / volume_std if volume_std > 0 else log_duration_volumes - volume_mean
-        duration_metric = duration_zscores.sum()
+        # Calculate z-score of total volume (not individual days)
+        total_duration_volume = duration_volumes.sum()
+        log_total_volume = np.log(total_duration_volume)
+        
+        # Compute z-score using lookback window statistics
+        duration_metric = (log_total_volume - volume_mean) / volume_std if volume_std > 0 else log_total_volume - volume_mean
         
         # Add sample
         X.append(X_sample)

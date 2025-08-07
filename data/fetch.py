@@ -17,6 +17,50 @@ INSTRUMENTS_FILE = 'instruments.txt'
 CUTOFF_DATE = '2023-01-01'
 PROGRESS_FILE = 'fetch_progress.json'
 
+def apply_split_adjustments(df):
+    """
+    Apply split adjustments to historical OHLCV data.
+    
+    Standard method: Work backwards through time, accumulating split factors.
+    Alpha Vantage already applies the split on the split date itself,
+    so we only adjust prices BEFORE the split date.
+    """
+    # Sort by date ascending
+    df = df.sort_index()
+    
+    # Calculate cumulative split adjustment factor
+    # Work backwards through time
+    cumulative_factor = 1.0
+    factors = []
+    
+    for i in range(len(df) - 1, -1, -1):
+        # First append the current factor
+        factors.append(cumulative_factor)
+        
+        # Then check if this date has a split
+        split_coef = df.iloc[i]['split_coefficient']
+        if split_coef != 1.0:
+            # Update factor for all previous dates (but not this date)
+            cumulative_factor *= (1.0 / split_coef)
+    
+    # Reverse to match original order
+    factors = factors[::-1]
+    df['split_factor'] = factors
+    
+    # Apply adjustments to OHLC prices
+    # Replace original prices with split-adjusted prices
+    for col in ['open', 'high', 'low', 'close']:
+        df[col] = df[col] * df['split_factor']
+    
+    # Volume is adjusted in the opposite direction
+    df['volume'] = df['volume'] / df['split_factor']
+    
+    # Drop the split_factor column as it's no longer needed
+    df = df.drop('split_factor', axis=1)
+    
+    return df
+
+
 def load_instruments():
     """Load instruments from instruments.txt file"""
     instruments_path = os.path.join(os.path.dirname(__file__), INSTRUMENTS_FILE)
@@ -76,6 +120,9 @@ def fetch_daily_data(symbol, outputsize='full', retry_count=3):
             # Convert to numeric
             for col in df.columns:
                 df[col] = pd.to_numeric(df[col])
+            
+            # Apply split adjustments before filtering
+            df = apply_split_adjustments(df)
             
             # Filter data to exclude entries after 2023-01-01
             df = df[df.index < CUTOFF_DATE]
