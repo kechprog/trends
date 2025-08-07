@@ -113,18 +113,18 @@ class MarketRegimeTransformer(nn.Module):
 
 if __name__ == "__main__":
     model = MarketRegimeTransformer(
-        lookback_window=127,
-        n_features=5,
-        d_model=128,
+        lookback_window=255,  # 256-1 because of pct_change
+        n_features=7,
+        d_model=256,
         nhead=8,
-        num_feature_layers=3,
-        num_aggregate_layers=2,
-        dim_feedforward=512,
+        num_feature_layers=4,
+        num_aggregate_layers=3,
+        dim_feedforward=1024,
         dropout=0.1,
         num_classes=3
     )
     
-    dummy_input = torch.randn(32, 127, 5)
+    dummy_input = torch.randn(32, 255, 7)  # Updated for 256 lookback and 7 features
     class_logits, duration = model(dummy_input)
     print(f"Model output shapes - Classes: {class_logits.shape}, Duration: {duration.shape}")
     print(f"Total parameters: {sum(p.numel() for p in model.parameters()):,}")

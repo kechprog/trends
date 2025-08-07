@@ -68,15 +68,10 @@ def fetch_daily_data(symbol, outputsize='full', retry_count=3):
             df.index = pd.to_datetime(df.index)
             df = df.sort_index()
             
-            # Rename columns - adjusted data has more columns
-            # We'll use adjusted close instead of regular close
+            # Rename columns to match Alpha Vantage output
             df.columns = ['open', 'high', 'low', 'close', 'adjusted_close', 'volume', 'dividend_amount', 'split_coefficient']
             
-            # Use adjusted close as our close price
-            df['close'] = df['adjusted_close']
-            
-            # Keep only the OHLCV columns we need
-            df = df[['open', 'high', 'low', 'close', 'volume']]
+            # Keep all columns intact - no filtering
             
             # Convert to numeric
             for col in df.columns:
