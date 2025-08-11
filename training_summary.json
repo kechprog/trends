@@ -1,0 +1,26 @@
+{
+  "config": {
+    "lookback_window": 256,
+    "n_features": 7,
+    "batch_size": 115,
+    "num_epochs": 80,
+    "learning_rate": 0.0001,
+    "model_params": 25011460
+  },
+  "best_results": {
+    "epoch": 13,
+    "val_accuracy": 71.43702258385919,
+    "balanced_accuracy": 71.39944263535212,
+    "duration_mse": 4.097481162553608,
+    "duration_rmse": 2.0242235949997243
+  },
+  "final_performance": {
+    "overall_accuracy": 71.43702258385919,
+    "class_accuracies": {
+      "bull": 75.95399757881994,
+      "flat": 65.86067105603634,
+      "bear": 72.3836592712001
+    },
+    "duration_mse": 4.176928974551958
+  }
+}
