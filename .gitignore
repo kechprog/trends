@@ -3,3 +3,5 @@
 data/downloaded/
 __pycache__/
 data/training
+voo_30min_clean.csv
+voo_30min
